@@ -18,10 +18,6 @@ if(!options.input) {
     process.exit(1);
 }
 
-//Read data from input file
-const data = fs.readFileSync(options.input, 'utf-8');
-const jsonData = JSON.parse(data);
-
 // Check if input file exists
 if (!fs.existsSync(options.input)) {
     console.error("Cannot find input file");
@@ -33,13 +29,32 @@ if (options.display) {
     console.log(jsonData);
 }
 
+//Read data from input file
+const data = fs.readFileSync(options.input, 'utf-8');
+const jsonData = JSON.parse(data);
+
+// Extract reserves data (assuming reserves are stored in jsonData)
+const reserves = jsonData.reserves || {};
+
+// Find the reserve with the smallest value
+let minReserve = null;
+for (const [name, value] of Object.entries(reserves)) {
+  if (minReserve === null || value < minReserve.value) {
+    minReserve = { name, value };
+  }
+}
+
+// Format the result as <назва актива>:<значення>
+const result = `${minReserve.name}:${minReserve.value}`;
+
+// Display data in console if -d is specified
+if (options.display) {
+  console.log(result);
+}
+
 // Write data to output file if -o is specified
 if (options.output) {
-    fs.writeFileSync(options.output, JSON.stringify(jsonData, null, 2));
-    
-    // Display data in console again if -d is specified
-    if (options.display) {
-      console.log(jsonData);
-    }
+  fs.writeFileSync(options.output, result, 'utf-8');
 }
+
   
