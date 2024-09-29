@@ -1,60 +1,61 @@
-let fs = require('node:fs');
-const { Command } = require('commander');
+// index.js
 
+const { Command } = require('commander');
+const fs = require('fs');
 const program = new Command();
 
+// Add command-line options
 program
-    .option('-i, --input - (обовʼязковий параметр) шлях до файлу, який даємо для читання (json з даними серверу Національного банку України)')
-    .option('-o, --output - (не обовʼязковий параметр) шлях до файлу, у якому записуємо результат')
-    .option('-d, --display - (не обовʼязковий параметр) якщо задано цей параметр, то результат має бути виведено у консоль')
-    .parse(process.argv);
+  .requiredOption('-i, --input <path>', 'path to input file')
+  .option('-o, --output <path>', 'path to output file')
+  .option('-d, --display', 'display result in console');
 
+program.parse(process.argv);
+
+// Get options
 const options = program.opts();
 
-
-//Check if input file exists
-if(!options.input) {
-    console.error("Please, specify input file");
-    process.exit(1);
+// Check for required input option
+if (!options.input) {
+  console.error("Please, specify input file");
+  process.exit(1);
 }
 
 // Check if input file exists
 if (!fs.existsSync(options.input)) {
-    console.error("Cannot find input file");
-    process.exit(1);
-  }  
-
-// Display data in console if -d is specified
-if (options.display) {
-    console.log(jsonData);
+  console.error("Cannot find input file");
+  process.exit(1);
 }
 
-//Read data from input file
+// Read data from input file
 const data = fs.readFileSync(options.input, 'utf-8');
 const jsonData = JSON.parse(data);
 
-// Extract reserves data (assuming reserves are stored in jsonData)
-const reserves = jsonData.reserves || {};
+// Find the asset with the minimum value
+let minAsset = null;
+let minValue = Infinity;
 
-// Find the reserve with the smallest value
-let minReserve = null;
-for (const [name, value] of Object.entries(reserves)) {
-  if (minReserve === null || value < minReserve.value) {
-    minReserve = { name, value };
+jsonData.forEach(asset => {
+  const value = asset.value; // Replace 'value' with the correct key if needed
+  const txt = asset.txt; // Replace 'name' with the correct key if needed
+  
+  if (value < minValue) {
+    minValue = value;
+    minAsset = { txt, value };
+  }
+});
+
+// Check if a minimum asset was found
+if (minAsset) {
+  const outputString = `${minAsset.txt}:${minAsset.value}`;
+
+  // Display result in console if -d is specified
+  if (options.display) {
+    console.log(outputString);
+  }
+
+  // Write result to output file if -o is specified
+  if (options.output) {
+    fs.writeFileSync(options.output, outputString);
   }
 }
-
-// Format the result as <назва актива>:<значення>
-const result = `${minReserve.name}:${minReserve.value}`;
-
-// Display data in console if -d is specified
-if (options.display) {
-  console.log(result);
-}
-
-// Write data to output file if -o is specified
-if (options.output) {
-  fs.writeFileSync(options.output, result, 'utf-8');
-}
-
-  
