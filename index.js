@@ -1,11 +1,10 @@
 let fs = require('node:fs');
-const { command } = require('commander');
+const { Command } = require('commander');
 
-
-const program = new command();
+const program = new Command();
 
 program
-    .requireOption('-i, --input - (обовʼязковий параметр) шлях до файлу, який даємо для читання (json з даними серверу Національного банку України)')
+    .option('-i, --input - (обовʼязковий параметр) шлях до файлу, який даємо для читання (json з даними серверу Національного банку України)')
     .option('-o, --output - (не обовʼязковий параметр) шлях до файлу, у якому записуємо результат')
     .option('-d, --display - (не обовʼязковий параметр) якщо задано цей параметр, то результат має бути виведено у консоль')
     .parse(process.argv);
@@ -16,7 +15,7 @@ const options = program.opts();
 //Check if input file exists
 if(!options.input) {
     console.error("Please, specify input file");
-    program.exit(1);
+    process.exit(1);
 }
 
 //Read data from input file
